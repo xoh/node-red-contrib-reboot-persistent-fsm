@@ -47,6 +47,8 @@ function camelize(label) {
 }
 
 module.exports = function (RED) {
+  let store = {}
+
   function StateMachineNode(config) {
     RED.nodes.createNode(this, config)
     let node = this
@@ -57,9 +59,10 @@ module.exports = function (RED) {
     let states = config.states || []
     let transitions = config.transitions || []
 
+    let init = config.persistOnReload && store[node.id] ? store[node.id] : states[0]
     try {
       node.fsm = new StateMachine({
-        init: states[0],
+        init,
         transitions: transitions
       })
     } catch (e) {
@@ -67,12 +70,12 @@ module.exports = function (RED) {
       throw e
     }
 
-    node.status({ fill: 'green', shape: 'dot', text: states[0] })
+    node.status({ fill: 'green', shape: 'dot', text: init })
 
     if (statePropertyType === 'flow') {
-      node.context().flow.set(stateProperty, states[0])
+      node.context().flow.set(stateProperty, init)
     } else if (statePropertyType === 'global') {
-      node.context().global.set(stateProperty, states[0])
+      node.context().global.set(stateProperty, init)
     }
 
     node.startup = function () {
@@ -117,6 +120,8 @@ module.exports = function (RED) {
           node.context().global.set(stateProperty, node.fsm.state)
         }
         node.send(msg)
+
+        store[node.id] = node.fsm.state
 
         node.status({ fill: 'green', shape: 'dot', text: node.fsm.state })
       }
