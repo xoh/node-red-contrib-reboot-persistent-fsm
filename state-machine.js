@@ -114,7 +114,7 @@ module.exports = function (RED) {
         node.fsm[trigger]()
         transition = true
       } else if (node.throwException) {
-        node.error('Invalid transition', msg)
+        node.error(`Can not transition '${trigger}' from state '${node.fsm.state}'`)
         return null
       }
 
