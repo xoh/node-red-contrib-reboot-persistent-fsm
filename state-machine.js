@@ -27,12 +27,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // Core dependency
 const StateMachine = require('javascript-state-machine')
 
-const util = require('util')
-
 function camelize(label) {
   if (label.length === 0) return label
 
-  var n,
+  let n,
     result,
     word,
     words = label.split(/[_-]/)
@@ -51,20 +49,13 @@ function camelize(label) {
 module.exports = function (RED) {
   function StateMachineNode(config) {
     RED.nodes.createNode(this, config)
-    var node = this
+    let node = this
 
-    node.triggerProperty = config.triggerProperty || 'topic'
-    node.triggerPropertyType = config.triggerPropertyType || 'msg'
-    node.stateProperty = config.stateProperty || 'topic'
-    node.statePropertyType = config.statePropertyType || 'msg'
-    node.outputStateChangeOnly = config.outputStateChangeOnly
-    node.throwException = config.throwException
+    let stateProperty = config.stateProperty || 'topic'
+    let statePropertyType = config.statePropertyType || 'msg'
 
-    if (node.outputStateChangeOnly == undefined) node.outputStateChangeOnly = false
-    if (node.throwException == undefined) node.throwException = false
-
-    var states = config.states || []
-    var transitions = config.transitions || []
+    let states = config.states || []
+    let transitions = config.transitions || []
 
     try {
       node.fsm = new StateMachine({
@@ -78,17 +69,16 @@ module.exports = function (RED) {
 
     node.status({ fill: 'green', shape: 'dot', text: states[0] })
 
-    if (node.statePropertyType === 'flow') {
-      node.context().flow.set(node.stateProperty, states[0])
-    } else if (node.statePropertyType === 'global') {
-      node.context().global.set(node.stateProperty, states[0])
+    if (statePropertyType === 'flow') {
+      node.context().flow.set(stateProperty, states[0])
+    } else if (statePropertyType === 'global') {
+      node.context().global.set(stateProperty, states[0])
     }
 
     node.startup = function () {
-      if (node.statePropertyType === 'msg') {
+      if (statePropertyType === 'msg') {
         msg = {}
-        RED.util.setMessageProperty(msg, node.stateProperty, node.fsm.state)
-
+        RED.util.setMessageProperty(msg, stateProperty, node.fsm.state)
         node.send(msg)
       }
     }
@@ -100,31 +90,31 @@ module.exports = function (RED) {
     })
 
     node.on('input', function (msg) {
-      var trigger = RED.util.evaluateNodeProperty(
-        node.triggerProperty,
-        node.triggerPropertyType,
+      let trigger = RED.util.evaluateNodeProperty(
+        config.triggerProperty || 'topic',
+        config.triggerPropertyType || 'msg',
         node,
         msg
       )
 
-      var transition = false
+      let transition = false
 
       if (node.fsm.can(trigger)) {
         trigger = camelize(trigger)
         node.fsm[trigger]()
         transition = true
-      } else if (node.throwException) {
+      } else if (config.throwException) {
         node.error(`Can not transition '${trigger}' from state '${node.fsm.state}'`)
         return null
       }
 
-      if (transition || !node.outputStateChangeOnly) {
-        if (node.statePropertyType === 'msg') {
-          RED.util.setMessageProperty(msg, node.stateProperty, node.fsm.state)
-        } else if (node.statePropertyType === 'flow') {
-          node.context().flow.set(node.stateProperty, node.fsm.state)
-        } else if (node.statePropertyType === 'global') {
-          node.context().global.set(node.stateProperty, node.fsm.state)
+      if (transition || !config.outputStateChangeOnly) {
+        if (statePropertyType === 'msg') {
+          RED.util.setMessageProperty(msg, stateProperty, node.fsm.state)
+        } else if (statePropertyType === 'flow') {
+          node.context().flow.set(stateProperty, node.fsm.state)
+        } else if (statePropertyType === 'global') {
+          node.context().global.set(stateProperty, node.fsm.state)
         }
         node.send(msg)
 
