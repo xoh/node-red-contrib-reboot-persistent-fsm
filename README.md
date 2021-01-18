@@ -2,7 +2,7 @@
 
 A Node-Red node that wraps around the [Javascript State Machine](https://www.npmjs.com/package/javascript-state-machine) to implement a [finite state machine](https://en.wikipedia.org/wiki/Finite-state_machine) for Node-Red.
 
-Combintation of [DeanCording](https://github.com/DeanCording/node-red-contrib-state-machine)'s and [lutzer](https://github.com/lutzer/node-red-contrib-finite-statemachine)'s similar libraries with the following notable changes:
+Combination of [DeanCording](https://github.com/DeanCording/node-red-contrib-state-machine)'s and [lutzer](https://github.com/lutzer/node-red-contrib-finite-statemachine)'s similar libraries with the following notable changes:
 
 - State can optionally persist during re-deployment of nodes.
 - Deprecated Node-RED events have been replaced.
