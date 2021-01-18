@@ -1,12 +1,13 @@
 <!--
 
-node-red-contrib-state-machine - A Node Red node to implement a state machine using javascript-state-machine
+node-red-contrib-persistent-fsm - A Node-Red node to implement a finite state machine using javascript-state-machine
 
 (https://www.npmjs.com/package/java-script-state-machine)
 
 MIT License
 
-Copyright (c) 2018 Dean Cording  <dean@cording.id.au>
+Portions Copyright (c) 2019 by Lutz Reiter
+Portions Copyright (c) 2018 Dean Cording  <dean@cording.id.au>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction, including
@@ -24,6 +25,52 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -->
 
+<style>
+  #fsm-graph svg {
+    background-color: #efefef;
+    border: 1px solid #cccccc;
+  }
+
+  #fsm-graph .state-circle {
+    fill: #fff;
+    stroke: #000;
+    fill-opacity: 0.2;
+    stroke-opacity: 0;
+    cursor: pointer;
+  }
+
+  #fsm-graph .state-circle.active {
+    fill-opacity: 1;
+    stroke-opacity: 1;
+  }
+
+  #fsm-graph .state-circle-text {
+    fill-opacity: 0.2;
+    cursor: pointer;
+    pointer-events: none;
+  }
+
+  #fsm-graph .state-circle-text.active {
+    fill-opacity: 1;
+  }
+
+  #fsm-graph .transition-line {
+    stroke: #000;
+  }
+
+  #fsm-graph .transition-curve {
+    stroke: #000;
+    stroke-width: 1;
+    fill: none;
+  }
+
+  #fsm-graph .arrow {
+    stroke-width: 5;
+    stroke: #000;
+    stroke-dasharray: 5, 5;
+  }
+</style>
+<script type="text/javascript" src="fsm/graph.js" inline></script>
 <script type="text/javascript">
   ;(function () {
     RED.nodes.registerType('state-machine', {
@@ -145,6 +192,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               }
 
               $(this).data('prev', newVal)
+
+              redraw()
             })
 
             stateField.val(state)
@@ -170,6 +219,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             })
 
             $('#node-input-states-container').find('label').first().show()
+
+            redraw()
           },
           sortItems: function (opt) {
             var states = $('#node-input-states-container').editableList('items')
@@ -192,6 +243,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               if (i == 0) $(this).find('label').show()
               else $(this).find('label').hide()
             })
+
+            redraw()
           },
           sortable: true,
           removable: true,
@@ -220,6 +273,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             })
               .appendTo(row)
               .focus()
+              .change(redraw)
 
             triggerField.val(transition.name)
 
@@ -231,14 +285,18 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             var fromField = $('<select/>', {
               style: 'margin-left: 5px; margin-bottom: 0; width: auto;',
               class: 'node-input-trigger-from-value'
-            }).appendTo(row2)
+            })
+              .appendTo(row2)
+              .change(redraw)
 
             row2.append('<span> &#8594; </span>')
 
             var toField = $('<select/>', {
               style: 'margin-left: 5px; margin-bottom: 0; width: auto;',
               class: 'node-input-trigger-to-value'
-            }).appendTo(row2)
+            })
+              .appendTo(row2)
+              .change(redraw)
 
             fromField.append($('<option>', { value: '*', text: '*' }))
 
@@ -253,6 +311,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
             fromField.val(transition.from)
             toField.val(transition.to)
+
+            redraw()
           },
           sortable: true,
           removable: true,
@@ -269,6 +329,36 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         statesList.editableList('addItems', this.states)
         transitionsList.editableList('addItems', this.transitions)
+
+        function redraw() {
+          let states = []
+          $('#node-input-states-container')
+            .editableList('items')
+            .each(function () {
+              let state = $(this).find('.node-input-state-value').val().trim()
+              if (state.length > 0) states.push(state)
+            })
+
+          let transitions = {}
+          $('#node-input-transitions-container')
+            .editableList('items')
+            .each(function () {
+              let trigger = $(this).find('.node-input-trigger-value').val().trim()
+              if (trigger.length > 0) {
+                let from = $(this).find('.node-input-trigger-from-value').val()
+                let to = $(this).find('.node-input-trigger-to-value').val()
+                if (from == '*') states.forEach(addTransition)
+                else addTransition(from)
+
+                function addTransition(from) {
+                  if (!transitions[from]) transitions[from] = {}
+                  transitions[from][trigger] = to
+                }
+              }
+            })
+          stateMachineGraph({ transitions }, '100%', 500)
+        }
+        redraw()
       },
       oneditsave: function () {
         var node = this
@@ -309,7 +399,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })()
 </script>
 
-<script type="text/x-red" data-template-name="state-machine">
+<script type="text/html" data-template-name="state-machine">
   <div class="form-row">
       <label for="node-input-name"><i class="icon-tag"></i> Name</label>
       <input type="text" id="node-input-name" placeholder="Name">
@@ -346,6 +436,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    <div class="form-row node-input-transitions-container-row">
       <label><i class="fa fa-list"></i> Transitions</span></label>
       <ol id="node-input-transitions-container"></ol>
+  </div>
+  <!-- <div>
+    <button id="node-button-draw" class="red-ui-button">Draw</button>
+    <img id="node-img-fsm" />
+  </div> -->
+  <div class="form-row">
+    <div id="fsm-graph">
+    </div>
   </div>
 </script>
 

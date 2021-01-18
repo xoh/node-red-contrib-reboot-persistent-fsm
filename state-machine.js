@@ -61,10 +61,7 @@ module.exports = function (RED) {
 
     let init = config.persistOnReload && store[node.id] ? store[node.id] : states[0]
     try {
-      node.fsm = new StateMachine({
-        init,
-        transitions: transitions
-      })
+      node.fsm = new StateMachine({ init, transitions })
     } catch (e) {
       node.status({ fill: 'red', shape: 'dot', text: e.message })
       throw e
@@ -128,4 +125,8 @@ module.exports = function (RED) {
     })
   }
   RED.nodes.registerType('state-machine', StateMachineNode)
+
+  RED.httpAdmin.get('/fsm/graph.js', function (req, res) {
+    res.sendFile(`${__dirname}/graph.js`)
+  })
 }
