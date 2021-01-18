@@ -9,6 +9,8 @@ Combination of [DeanCording](https://github.com/DeanCording/node-red-contrib-sta
 - Invalid transition error includes details of request.
 - Excellent input UI from [DeanCording](https://github.com/DeanCording) combined with simple graphical rendering from [lutzer](https://github.com/lutzer). Best of both worlds.
 
+**Note:** If you want to use this library instead of [node-red-contrib-state-machine](https://flows.nodered.org/node/node-red-contrib-state-machine), simply remove that node from your palette, then install this one. All node configuration should be saved.
+
 ### Usage
 
 The node is configured with a number of states and triggers that will cause the node to transition from one state to another. At any time, the node can only be in one of the defined states and it will only transition to another state when it receives a trigger defined for the current state. The same trigger can be used to cause transitions from more than one state.
