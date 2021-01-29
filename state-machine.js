@@ -51,6 +51,8 @@ module.exports = function (RED) {
 
   function StateMachineNode(config) {
     RED.nodes.createNode(this, config)
+    if (!config.hasOwnProperty('initialDelay')) config.initialDelay = '0' // Default value for legacy versions
+
     let node = this
 
     let stateProperty = config.stateProperty || 'topic'
@@ -69,25 +71,25 @@ module.exports = function (RED) {
 
     node.status({ fill: 'green', shape: 'dot', text: init })
 
-    if (statePropertyType === 'flow') {
-      node.context().flow.set(stateProperty, init)
-    } else if (statePropertyType === 'global') {
-      node.context().global.set(stateProperty, init)
-    }
+    if (config.initialDelay !== '') {
+      // Anything other than empty string will cause initial sending/setting of state
 
-    node.startup = function () {
-      if (statePropertyType === 'msg') {
-        msg = {}
-        RED.util.setMessageProperty(msg, stateProperty, node.fsm.state)
-        node.send(msg)
+      if (statePropertyType === 'flow') {
+        node.context().flow.set(stateProperty, init)
+      } else if (statePropertyType === 'global') {
+        node.context().global.set(stateProperty, init)
+      } else if (statePropertyType === 'msg') {
+        RED.events.on('flows:started', function () {
+          msg = {}
+          RED.util.setMessageProperty(msg, stateProperty, node.fsm.state)
+          if (+config.initialDelay) setTimeout(() => node.send(msg), config.initialDelay * 1000)
+          else node.send(msg)
+        })
+        node.on('close', function () {
+          RED.events.removeListener('flows:started', node.startup)
+        })
       }
     }
-
-    RED.events.on('flows:started', node.startup)
-
-    node.on('close', function () {
-      RED.events.removeListener('flows:started', node.startup)
-    })
 
     node.on('input', function (msg) {
       let trigger = RED.util.evaluateNodeProperty(

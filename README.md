@@ -17,7 +17,7 @@ The node is configured with a number of states and triggers that will cause the 
 
 Triggers that are not valid for the current state can either be ignored or cause an error to be throw that can be caught by a Catch node.
 
-The node will always start in the first state on the state list and will emit a message with the initial state if the state output is set to a message property.
+The node will always start in the first state on the state list (unless "Persist on re-deploy" is enabled) and will (optionally) emit a message with the initial (or saved) state if the state output is set to a message property.
 
 Global and flow context properties can be used as trigger inputs but state transitions will only occur when the node receives a message.
 
