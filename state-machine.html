@@ -78,9 +78,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       color: '#ffb0a5',
       defaults: {
         name: { value: '' },
-        triggerProperty: { value: 'topic', required: true },
+        triggerProperty: { value: 'payload', required: true },
         triggerPropertyType: { value: 'msg', required: true },
-        stateProperty: { value: 'topic', required: true },
+        stateProperty: { value: 'payload', required: true },
         statePropertyType: { value: 'msg', required: true },
         initialDelay: { value: '0', validate: RED.validators.regex(/^[0-9]*$/) },
         persistOnReload: { value: true },
@@ -409,12 +409,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   </div>
   <div class="form-row">
       <label for="node-input-triggerProperty"><i class="trigger.svg"></i> Trigger Input</label>
-      <input type="text" id="node-input-triggerProperty" placeholder="Trigger" style="width:250px;">
+      <input type="text" id="node-input-triggerProperty" style="width:250px;">
       <input type="hidden" id="node-input-triggerPropertyType">
   </div>
   <div class="form-row">
       <label for="node-input-stateProperty"><i class="fa fa-edit"></i> State Output</label>
-      <input type="text" id="node-input-stateProperty" placeholder="State" style="width:250px;">
+      <input type="text" id="node-input-stateProperty" style="width:250px;">
       <input type="hidden" id="node-input-statePropertyType">
   </div>
   <div class="form-row">
