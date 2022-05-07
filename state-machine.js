@@ -33,7 +33,7 @@ function camelize(label) {
   let n,
     result,
     word,
-    words = label.split(/[_-]/)
+    words = label.toString().split(/[_-]/)
 
   // single word with first character already lowercase, return untouched
   if (words.length === 1 && words[0][0].toLowerCase() === words[0][0]) return label
