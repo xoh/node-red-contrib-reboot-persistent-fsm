@@ -55,8 +55,13 @@ module.exports = function (RED) {
 
     let node = this
 
-    let stateProperty = config.stateProperty || 'topic'
-    let statePropertyType = config.statePropertyType || 'msg'
+    let stateProperty = config.stateProperty
+    let statePropertyType = config.statePropertyType
+
+    if (stateProperty === '') {
+      node.error('State output property is required in node configuration')
+      return
+    }
 
     let states = config.states || []
     let transitions = config.transitions || []
@@ -92,9 +97,14 @@ module.exports = function (RED) {
     }
 
     node.on('input', function (msg) {
+      if (config.triggerProperty === '') {
+        node.error('Trigger input property is required in node configuration')
+        return null
+      }
+
       let trigger = RED.util.evaluateNodeProperty(
-        config.triggerProperty || 'topic',
-        config.triggerPropertyType || 'msg',
+        config.triggerProperty,
+        config.triggerPropertyType,
         node,
         msg
       )
