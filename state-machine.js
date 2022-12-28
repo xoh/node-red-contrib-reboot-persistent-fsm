@@ -84,14 +84,15 @@ module.exports = function (RED) {
       } else if (statePropertyType === 'global') {
         node.context().global.set(stateProperty, init)
       } else if (statePropertyType === 'msg') {
-        RED.events.on('flows:started', function () {
+        let starter = function () {
           let msg = {}
           RED.util.setMessageProperty(msg, stateProperty, node.fsm.state)
           if (+config.initialDelay) setTimeout(() => node.send(msg), config.initialDelay * 1000)
           else node.send(msg)
-        })
+        }
+        RED.events.on('flows:started', starter)
         node.on('close', function () {
-          RED.events.removeListener('flows:started', node.startup)
+          RED.events.removeListener('flows:started', starter)
         })
       }
     }
