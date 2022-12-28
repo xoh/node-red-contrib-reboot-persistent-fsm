@@ -97,9 +97,9 @@ module.exports = function (RED) {
       }
     }
 
-    node.on('input', function (msg) {
+    node.on('input', function (msg, send = node.send, done = node.error) {
       if (config.triggerProperty === '') {
-        node.error('Trigger input property is required in node configuration')
+        done('Trigger input property is required in node configuration')
         return null
       }
 
@@ -117,7 +117,7 @@ module.exports = function (RED) {
         node.fsm[trigger]()
         transition = true
       } else if (config.throwException) {
-        node.error(`Can not transition '${trigger}' from state '${node.fsm.state}'`)
+        done(`Can not transition '${trigger}' from state '${node.fsm.state}'`)
         return null
       }
 
@@ -129,7 +129,7 @@ module.exports = function (RED) {
         } else if (statePropertyType === 'global') {
           node.context().global.set(stateProperty, node.fsm.state)
         }
-        node.send(msg)
+        send(msg)
 
         store[node.id] = node.fsm.state
 
