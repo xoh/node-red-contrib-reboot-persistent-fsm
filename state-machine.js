@@ -47,8 +47,6 @@ function camelize(label) {
 }
 
 module.exports = function (RED) {
-  let store = {}
-
   function StateMachineNode(config) {
     RED.nodes.createNode(this, config)
     if (!config.hasOwnProperty('initialDelay')) config.initialDelay = '0' // Default value for legacy versions
@@ -66,7 +64,8 @@ module.exports = function (RED) {
     let states = config.states || []
     let transitions = config.transitions || []
 
-    let init = config.persistOnReload && store[node.id] ? store[node.id] : states[0]
+    let savedState = node.context().get('state')
+    let init = config.persistOnReload && savedState !== undefined ? savedState : states[0]
     try {
       node.fsm = new StateMachine({ init, transitions })
     } catch (e) {
@@ -131,7 +130,7 @@ module.exports = function (RED) {
         }
         send(msg)
 
-        store[node.id] = node.fsm.state
+        node.context().set('state', node.fsm.state)
 
         node.status({ fill: 'green', shape: 'dot', text: node.fsm.state })
       }
