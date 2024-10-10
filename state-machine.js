@@ -55,6 +55,9 @@ module.exports = function (RED) {
 
     let stateProperty = config.stateProperty
     let statePropertyType = config.statePropertyType
+    let persistStore = config.persistStore
+    let persistStoreType = config.persistStoreType
+    let persistStoreCustomized = config.persistStoreCustomized
 
     if (stateProperty === '') {
       node.error('State output property is required in node configuration')
@@ -64,7 +67,17 @@ module.exports = function (RED) {
     let states = config.states || []
     let transitions = config.transitions || []
 
-    let savedState = node.context().get('state')
+    let savedState = undefined
+    if (persistStoreCustomized) {
+      if(persistStoreType === 'flow') {
+        savedState = node.context().flow.get(persistStore)
+      } else if (persistStoreType === 'global') {
+        savedState = node.context().global.get(persistStore)
+      }
+    } else {
+      savedState = node.context().get('state')
+    }
+
     let init = config.persistOnReload && savedState !== undefined ? savedState : states[0]
     try {
       node.fsm = new StateMachine({ init, transitions })
@@ -130,7 +143,15 @@ module.exports = function (RED) {
         }
         send(msg)
 
-        node.context().set('state', node.fsm.state)
+        if (persistStoreCustomized) {
+          if(persistStoreType === 'flow') {
+            savedState = node.context().flow.set(persistStore, node.fsm.state)
+          } else if (persistStoreType === 'global') {
+            savedState = node.context().global.set(persistStore, node.fsm.state)
+          }
+        } else {
+          node.context().set('state', node.fsm.state)
+        }
 
         node.status({ fill: 'green', shape: 'dot', text: node.fsm.state })
       }

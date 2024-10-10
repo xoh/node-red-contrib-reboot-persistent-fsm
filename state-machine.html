@@ -69,6 +69,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     stroke: #000;
     stroke-dasharray: 5, 5;
   }
+
+  .hidden {
+    display: none;
+  }
 </style>
 <script type="text/javascript" src="fsm/graph.js" inline></script>
 <script type="text/javascript">
@@ -82,6 +86,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         triggerPropertyType: { value: 'msg', required: true },
         stateProperty: { value: 'payload', required: true },
         statePropertyType: { value: 'msg', required: true },
+        persistStore: { value: '', required: false },
+        persistStoreType: { value: 'flow', required: false },
+        persistStoreCustomized: { value: false },
         initialDelay: { value: '0', validate: RED.validators.regex(/^[0-9]*$/) },
         persistOnReload: { value: true },
         outputStateChangeOnly: { value: false },
@@ -125,6 +132,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       oneditprepare: function () {
         if (!this.hasOwnProperty('initialDelay')) this.initialDelay = '0' // Default value for legacy versions
 
+        if (!this.persistStoreType) {
+          this.persistStoreType = 'flow'
+        }
+        $('#node-input-persistStore').typedInput({
+          default: 'flow',
+          types: ['flow', 'global'],
+          typeField: $('#node-input-persistStoreType')
+        })
+
         if (!this.triggerPropertyType) {
           this.triggerPropertyType = 'msg'
         }
@@ -141,6 +157,24 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           default: 'msg',
           types: ['msg', 'flow', 'global'],
           typeField: $('#node-input-statePropertyType')
+        })
+
+        $('#node-input-persistOnReload').on('change', function() {
+          if ($('#node-input-persistOnReload:checked').val()) {
+            $('#persistStoreCustomized-row').removeClass("hidden")
+          } else {
+            $('#persistStoreCustomized-row').addClass("hidden")
+            $('#node-input-persistStoreCustomized').prop("checked", false)
+            $('#node-input-persistStoreCustomized').trigger("change")
+          }
+        })
+
+        $('#node-input-persistStoreCustomized').on('change', function() {
+          if ($('#node-input-persistStoreCustomized:checked').val()) {
+            $('#persistStore-row').removeClass("hidden")
+          } else {
+            $('#persistStore-row').addClass("hidden")
+          }
         })
 
         var statesList = $('#node-input-states-container')
@@ -438,6 +472,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       <label>&nbsp;</label>
       <input type="checkbox" id="node-input-persistOnReload" style="display: inline-block; width: auto; vertical-align: top;">
       <label for="node-input-persistOnReload" style="width: 70%;">Persist state on re-deploy</label>
+  </div>
+  <div class="form-row" id="persistStoreCustomized-row">
+      <label>&nbsp;</label>
+      <input type="checkbox" id="node-input-persistStoreCustomized" style="display: inline-block; width: auto; vertical-align: top;">
+      <label for="node-input-persistStoreCustomized" style="width: 70%;">Use custom persist cache</label>
+  </div>
+  <div class="form-row" id="persistStore-row">
+      <label for="node-input-persistStore">Custom Store</label>
+      <input type="text" id="node-input-persistStore" style="width:250px;">
+      <input type="hidden" id="node-input-persistStoreType">
   </div>
    <div class="form-row node-input-states-container-row">
       <label><i class="fa fa-list"></i> States</span></label>
