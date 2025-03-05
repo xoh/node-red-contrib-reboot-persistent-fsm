@@ -1,11 +1,11 @@
 {
-  "name": "node-red-contrib-persistent-fsm",
-  "version": "1.2.1",
-  "description": "A Node Red node for implementing a finite state machine.",
+  "name": "node-red-contrib-reboot-persistent-fsm",
+  "version": "1.0.0",
+  "description": "A Node Red node for implementing a reboot persistent finite state machine.",
   "dependencies": {
     "javascript-state-machine": "3.*"
   },
-  "author": "hufftheweevil",
+  "author": "xoh",
   "license": "MIT",
   "keywords": [
     "node-red",
@@ -13,15 +13,17 @@
     "state machine",
     "finite state machine",
     "state",
-    "transition"
+    "transition",
+    "persistent",
+    "context"
   ],
   "bugs": {
-    "url": "https://github.com/hufftheweevil/node-red-contrib-persistent-fsm/issues"
+    "url": "https://github.com/xoh/node-red-contrib-reboot-persistent-fsm/issues"
   },
-  "homepage": "https://github.com/hufftheweevil/node-red-contrib-persistent-fsm",
+  "homepage": "https://github.com/xoh/node-red-contrib-reboot-persistent-fsm",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hufftheweevil/node-red-contrib-persistent-fsm.git"
+    "url": "git+https://github.com/xoh/node-red-contrib-reboot-persistent-fsm.git"
   },
   "node-red": {
     "nodes": {
